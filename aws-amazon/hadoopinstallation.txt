@@ -1,0 +1,222 @@
+#############################
+Install java and hadoop in namenode and datanode by using following commands
+###############################
+
+1)Update package on the server
+>>sudo apt-get update
+
+2)Install Java Developers Kit
+>>sudo apt-get install openjdk-7-jdk
+OR
+{
+if above package is not available
+>>java
+e.g >>sudo apt-get install openjdk-9-jre-headless
+}
+
+3)Confirm the java version which should be 7
+>>java -version
+
+4)download hadoop from apache to folder Downloads in /home/ubuntu folder
+>>wget http://apache.mirrors.tds.net/hadoop/common/hadoop-2.7.1/hadoop-2.7.1.tar.gz -P ~/Downloads
+
+5)Uncompress the Hadoop tar file into the /usr/local folder
+>>sudo tar zxvf ~/Downloads/hadoop-* -C /usr/local
+
+6)Move all Hadoop related file from /usr/local tp /usr/local/hadoop
+>>sudo mv /usr/local/hadoop-* /usr/local/hadoop
+
+7)Set environment variables on all nodes
+Edit /home/ubuntu/.profile
+
+7.1)
+add this at bottom=
+
+export JAVA_HOME=/usr
+export PATH=$PATH:$JAVA_HOME/bin
+export HADOOP_HOME=/usr/local/hadoop
+export PATH=$PATH:$HADOOP_HOME/bin
+export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop
+
+(if /.profile is not opening due to denied permission
+>>nano ~/.profile
+
+add this at bottom=
+
+#Hadoop Environment Variables
+export JAVA_HOME=/usr
+export PATH=$PATH:$JAVA_HOME/bin
+export HADOOP_HOME=/usr/local/hadoop
+export PATH=$PATH:$HADOOP_HOME/bin
+export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop
+
+)
+
+7.2) load variables
+>>.~/.profile
+
+8)Hadoop configuration files on all Nodes
+HADOOP_CONF_DIR/hadoop-env.sh change JAVA_HOME
+Edit environment of java=
+usr/local/hadoop/etc/hadoop/hadoop-env.sh
+
+edit this export JAVA_HOME=${JAVA_HOME}
+to
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+
+if permission is denied:-
+>>sudo chown -R ubuntu /usr/local/hadoop
+
+***********************************************
+$HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop
+$HADOOP_HOME=/usr/local/hadoop
+***********************************************
+
+###########################
+Follwing configuration only for namenode
+############################
+9) Edit this file only in namenode=
+
+usr/local/hadoop/etc/hadoop/core-site.xml
+(Edit configuration)
+<configuration>
+	<property>
+		<name>fs.defaultFS</name>
+		<value>hdfs://(namenode-public-dns):9000</value>
+	</property>
+</configuration>
+
+e.g. 
+<configuration>
+	<property>
+		<name>fs.defaultFS</name>
+		<value>hdfs://ec2-35-154-154-221.ap-south-1.compute.amazonaws.com:9000</value>
+	</property>
+</configuration>
+
+####################################
+5 NameNode Configuration
+####################################
+10)Edit file hosts of namenode=
+/etc/host
+
+10.1)permission is denied as owner is root so give full permission so we can make changes=
+>>sudo chown ubuntu /etc/hosts
+
+10.2)Add at top of /etc/hosts file above line "127.0.0.1 localhost" :-
+
+#NameNode
+namenode_Private IPs namenode_Public DNS
+#DataNode
+datanode_Private IPs datanode_Public DNS
+
+e.g.
+172.31.47.84 ec2-54-149-105-42.us-west-2.compute.amazonaws.com -> namenode
+10.0.0.97 ec2-54-214-218-109.us-west-2.compute.amazonaws.com -> datanode
+
+10.3)After editing file hosts return root permission to it from ubuntu :-
+>>sudo chown root /etc/hosts
+
+11) Edit hdfs-site.xml file of NameNode:-
+usr/local/hadoop/etc/hadoop/hdfs-site.xml
+(Edit configuration)
+<configuration>
+	<property>
+		<name>dfs.replication</name>
+		<value>3</value>
+	</property>
+	<property>
+		<name>dfs.namenode.name.dir</name>
+		<value>file:///usr/local/hadoop/hadoop_data/hdfs/namenode</value>
+	</property>
+</configuration>
+
+12) Create hadoop_data folder in /usr/local/hadoop=
+>>sudo mkdir -p $HADOOP_HOME/hadoop_data/hdfs/namenode
+if above command is not working then
+>>sudo mkdir -p /usr/local/hadoop/hadoop_data/hdfs/namenode
+
+13) Create a file named masters in /usr/local/hadoop/etc/hadoop directory=
+>>echo "namenode" | cat >> $HADOOP_CONF_DIR/masters
+if above command is not working then
+>>echo "namenode" | cat >> /usr/local/hadoop/etc/hadoop/masters
+
+14)Remove old /usr/local/hadoop/etc/hadoop/slaves file
+>>sudo rm $HADOOP_CONF_DIR/slaves
+if above command is not working then 
+>>sudo rm /usr/local/hadoop/etc/hadoop/slaves
+
+15)add datanode hosts to the /usr/local/hadoop/etc/hadoop/slaves file
+>>echo "datanode1" | cat >> $HADOOP_CONF_DIR/slaves
+>>echo "datanode2" | cat >> $HADOOP_CONF_DIR/slaves
+>>echo "datanode3" | cat >> $HADOOP_CONF_DIR/slaves
+
+if above command is not working then 
+>>echo "datanode1" | cat >> /usr/local/hadoop/etc/hadoop/slaves
+>>echo "datanode2" | cat >> /usr/local/hadoop/etc/hadoop/slaves
+>>echo "datanode3" | cat >> /usr/local/hadoop/etc/hadoop/slaves
+
+16) Update $HADOOP_HOME directory ownership to ubuntu (that's you) =
+>>sudo chown -R ubuntu $HADOOP_HOME
+if above command is not working then 
+>>sudo chown -R ubuntu /usr/local/hadoop
+
+####################
+6 DataNode Configuration.
+####################
+
+17)Edit hdfs-site.xml file of DataNodes:-
+usr/local/hadoop/etc/hadoop/hdfs-site.xml
+(Edit configuration)
+<configuration>
+	<property>
+		<name>dfs.replication</name>
+		<value>3</value>   <!-- 3 is no of datanodes -->
+	</property>
+	<property>
+		<name>dfs.datanode.name.dir</name>
+		<value>file:///usr/local/hadoop/hadoop_data/hdfs/datanode</value>
+	</property>
+</configuration>
+
+18)if you created multiple datanodes then copy in another datanodes
+>>scp $HADOOP_CONF_DIR/hdfs-site.xml datanode2:$HADOOP_CONF_DIR
+
+19) create data directory on each datanode:-
+>>sudo mkdir -p $HADOOP_HOME/hadoop_data/hdfs/datanode
+if above command is not working then
+>>sudo mkdir -p /usr/local/hadoop/hadoop_data/hdfs/datanode
+
+20)update $HADOOP_HOME directory ownership to ubuntu (that's you) on all datanodes
+>>sudo chown -R ubuntu $HADOOP_HOME
+if above command is not working then 
+>>sudo chown -R ubuntu /usr/local/hadoop
+
+#####################
+7 Starting up the hadoop cluster ! format HDFS YARN and JobHistory
+######################
+
+21)format the HDFS
+>>hdfs namenode -format
+
+22)start dfs service
+>>$HADOOP_HOME/sbin/start-dfs.sh
+
+#####################
+browse HDFS on web browser
+namenode_public-dns:50070
+########################
+
+21)start yarn on namenode
+>>$HADOOP_HOME/sbin/start-yarn.sh
+>>$HADOOP_HOME/sbin/mr-jobhistory-deamon.sh start historyserver
+
+>>jsp  //(just to check)
+
+##################
+testing hdfs
+#####################
+
+>>echo "hiii" | cat >> file.txt
+>>hdfs dfs -mkdir /user
+>>hdfs dfs -rm /user/file*
