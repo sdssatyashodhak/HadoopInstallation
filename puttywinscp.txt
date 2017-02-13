@@ -1,0 +1,27 @@
+##################################################
+2 Setup puTTY and WinSCP to connect to Amazon Hadoop Cluster
+##################################################
+
+1)Setup connection in puTTY
+1.1)Connect Namenode to puTTY :-
+Host Name= username@publicDNS(e.g. ubuntu@ec2-35-154-154-221.ap-south-1.compute.amazonaws.com)
+Saved Session = Give name to session (e.g. Amazon-NameNode)
+Category -> SSH -> Auth -> Private Key for authentication -> Browse .ppk file -> Session -> save -> open -> Yes
+
+1.2)Connect DataNodes to puTTY :-
+puTTY -> Load NameNode -> Duplicate NameNode by changing Host Name(publicDNS) and Saved Session
+e.g.
+Host Name =ubuntu@ec2-35-154-13-88.ap-south-1.compute.amazonaws.com
+Saved Session = Amazon-DataNode1
+
+2)Setup connection in WinSCP :-
+New Site
+2.1)Connect Namenode to WinSCP :-
+Host Name = publicDNS(e.g. ec2-35-154-154-221.ap-south-1.compute.amazonaws.com)
+User name = ubuntu
+Advanced -> Advanced -> SSH -> Authentication -> .ppk file -> Save -> Site name (e.g. Amazon-NameNode) -> ok
+
+2.2)Connect DataNodes to WinSCP :-
+Manage -> Clone to New Site -> change publicDNS -> Save -> Site name (e.g. Amazon-DataNode1) -> ok
+
+2.3) Login -> Yes

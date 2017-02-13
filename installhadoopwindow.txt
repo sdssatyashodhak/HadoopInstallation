@@ -1,0 +1,38 @@
+1)Environment setting:-
+
+Hadoop=
+create new variable
+HADOOP_HOME=C:\hadoop2.3.0
+Edit path
+C:\hadoop2.3.0\bin;
+
+
+Java=
+create new variable
+JAVA_HOME=C:\java
+Edit path
+C:\java\bin;
+
+####################
+Open cmd administrator
+####################
+
+>>java
+>>java -version
+>>javac version
+
+2)Edit C:\hadoop2.3.0\etc\hadoop\hadoop-env.cmd file:-
+change line to "set JAVA_HOME=C:\java"
+
+check by following command
+c:\hadoop-2.3.0\bin>hadoop
+
+3)create namenode in C:/hadoop/data/dfs:-
+c:\hadoop-2.3.0\bin>hadoop namenode -format
+
+4)start yarn:-
+c:\hadoop-2.3.0\sbin>start-yarn
+
+5)start dfs:-
+c:\hadoop-2.3.0\sbin>start-dfs
+

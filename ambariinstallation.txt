@@ -1,0 +1,7 @@
+ambari server
+sudo wget --output-document=/etc/apt/sources.list.d/ambari.list http://public-repo-1.hortonworks.com/ambari/ubuntu12/2.x/updates/2.0.1/ambari.list
+sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com B9733A7A07513CAD
+sudo apt-get update
+sudo apt-get install ambari-server
+
+http://ec2-54-149-105-42.us-west-2.compute.amazonaws.com:8080/#/login

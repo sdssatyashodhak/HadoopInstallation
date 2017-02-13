@@ -1,0 +1,16 @@
+#cdm as administrator#
+cd ..
+cd ..
+cd hadoop-2.3\bin
+hadoop
+hadoop namenode -format
+cd ..
+cd sbin
+start-yarn
+start-dfs
+
+====================================================
+
+c:\hadoop-2.3\bin>hadoop
+c:\hadoop-2.3\sbin>start-yarn
+c:\hadoop-2.3\sbin>start-dfs

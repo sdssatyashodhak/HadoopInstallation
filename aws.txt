@@ -1,0 +1,117 @@
+#######################################
+1 Setup AWS Amazon EC2 4 Node Cluster for Hadoop
+#######################################
+1) aws.amazon.com
+
+2)sign in to the console
+
+3)Asia pacific Mumbai 
+
+4)EC2 Dashboard -> Launch Instance -> select "free tier only" ->  select "ubuntu server 14.04 LTS" -> select t2 micro(free tier eligible) then "Next:Configure Instance Details" 
+
+5) Configure Instance Details
+5.1)Number of instances = 4(1 Namenode , 3 datanodes or 4 seperate virtual machines)
+5.2)click on "Next:Add storage"
+5.3)click on "Next:Add Tags"
+5.4)give value to name (e.g. Node) -> "Next: Configure Security Group"
+
+6) Configure Security Group
+Assign a security group = create a new security group
+Security group name = e.g. open
+Description = e.g. Open to Everyone
+Type = All traffic
+"Review and Launch"
+
+7)Launch
+Create a new key pair
+key pair name (e.g. hadoopkey)
+Download key pair
+Launch Instance
+
+8)View Instances
+
+9)Rename Nodes to
+e.g. NameNode, DataNode1 , DataNode2 , DataNode3
+
+##################################################
+2 Setup puTTY and WinSCP to connect to Amazon Hadoop Cluster
+##################################################
+
+1)Setup connection in puTTY
+1.1)Connect Namenode to puTTY :-
+Host Name= username@publicDNS(e.g. ubuntu@ec2-35-154-154-221.ap-south-1.compute.amazonaws.com)
+Saved Session = Give name to session (e.g. Amazon-NameNode)
+Category -> SSH -> Auth -> Private Key for authentication 
+{
+Browse private key
+for private key = go to puTTYgen -> File -> Load private key (browse .pem file) -> ok -> SSH-2 RSA -> save private key ->Yes -> .ppk file saved
+}
+-> Browse .ppk file -> Session -> save -> open -> Yes
+
+1.2)Connect DataNodes to puTTY :-
+puTTY -> Load NameNode -> Duplicate NameNode by changing Host Name(publicDNS) and Saved Session
+e.g.
+Host Name =ubuntu@ec2-35-154-13-88.ap-south-1.compute.amazonaws.com
+Saved Session = Amazon-DataNode1
+
+2)Setup connection in WinSCP :-
+New Site
+2.1)Connect Namenode to WinSCP :-
+Host Name = publicDNS(e.g. ec2-35-154-154-221.ap-south-1.compute.amazonaws.com)
+User name = ubuntu
+Advanced -> Advanced -> SSH -> Authentication -> .ppk file -> Save -> Site name (e.g. Amazon-NameNode) -> ok
+
+2.2)Connect DataNodes to WinSCP :-
+Manage -> Clone to New Site -> change publicDNS -> Save -> Site name (e.g. Amazon-DataNode1) -> ok
+
+2.3) Login -> Yes
+
+####################################################
+3 Setup Passwordless SSH
+######################################################
+
+3.1) Copy .pem file into /home/ubuntu/.ssh folder 
+
+3.2) Create file config into /home/ubuntu/.ssh folder 
+config file containts=
+----------------------------
+Host namenode
+ HostName ec2-35-154-154-221.ap-south-1.compute.amazonaws.com
+ User ubuntu
+ IdentityFile ~/.ssh/hadoopkey.pem
+Host datanode1
+ HostName ec2-35-154-13-88.ap-south-1.compute.amazonaws.com
+ User ubuntu
+ IdentityFile ~/.ssh/hadoopkey.pem
+Host datanode2
+ HostName ec2-35-154-143-137.ap-south-1.compute.amazonaws.com
+ User ubuntu
+ IdentityFile ~/.ssh/hadoopkey.pem
+Host datanode3
+ HostName ec2-35-154-120-18.ap-south-1.compute.amazonaws.com
+ User ubuntu
+ IdentityFile ~/.ssh/hadoopkey.pem
+---------------------------- 
+
+3.3)set permission level on .pem file on all nodes
+sudo chmod 600 ~/.ssh/filename.pem(e.g. hadoopkey.pem)
+
+3.4) Copy config and pem file to all nodes
+scp ~/.ssh/hadoopkey.pem ~/.ssh/config datanode1:~/.ssh
+scp ~/.ssh/hadoopkey.pem ~/.ssh/config datanode2:~/.ssh
+scp ~/.ssh/hadoopkey.pem ~/.ssh/config datanode3:~/.ssh
+
+3.5) generate key files on the NameNode
+ssh-keygen -f ~/.ssh/sshkey_rsa -t rsa -P ""
+
+3.6)copy generated key from id-rsa.pub to authorized_keys file in /home/ubuntu/.ssh folder
+cat ~/.ssh/sshkey_rsa.pub >> ~/.ssh/authorized_keys
+
+copy generated key from id-rsa.pub to authorized_keys file in /home/ubuntu/.ssh folder on DataNode1
+cat ~/.ssh/sshkey_rsa.pub | ssh datanode1 `cat >> ~/.ssh/authorized_keys`
+
+copy generated key from id-rsa.pub to authorized_keys file in /home/ubuntu/.ssh folder on DataNode2
+cat ~/.ssh/sshkey_rsa.pub | ssh datanode2 `cat >> ~/.ssh/authorized_keys`
+
+copy generated key from id-rsa.pub to authorized_keys file in /home/ubuntu/.ssh folder on DataNode3
+cat ~/.ssh/sshkey_rsa.pub | ssh datanode3 `cat >> ~/.ssh/authorized_keys`

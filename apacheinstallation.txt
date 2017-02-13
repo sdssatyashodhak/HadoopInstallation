@@ -1,0 +1,16 @@
+##Php##
+sudo apt-get install apache2 libapache2-mod-php5 php5 mysql-server mysql-php5
+
+You can also get phpadmin if you would like.
+Remember to restart the apache service:
+service apache2 restart
+
+Then, run a secure installation of mysql:
+mysql_secure_installation
+
+mysql -u root -p
+
+
+unable to install php
+sudo aptitude purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
+sudo add-apt-repository ppa:ondrej/php
